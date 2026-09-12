@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>わくわく！新ヘボン式 寿司タイピング</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            user-select: none;
+            background-color: #fffbeb;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+        .animate-float {
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        @keyframes belt-move {
+            0% { background-position: 0 0; }
+            100% { background-position: 60px 0; }
+        }
+        .conveyor-belt {
+            background: repeating-linear-gradient(90deg, #d97706 0px, #d97706 30px, #b45309 30px, #b45309 60px);
+            animation: belt-move 1.5s linear infinite;
+        }
+        .conveyor-belt.paused {
+            animation-play-state: paused;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes pop-in {
+            0% { transform: scale(0.8); opacity: 0; }
+            80% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: pop-in 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Custom Scrollbar for Modal */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f59e0b;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between overflow-x-hidden">
+
+    <header class="bg-amber-500 text-white shadow-md p-4 sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl">🍣</span>
+                <h1 class="text-xl md:text-2xl font-black tracking-wide">新ヘボン式！おばけ寿司タイピング</h1>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="btn-sound-toggle" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-1.5 px-3 rounded-full text-sm transition flex items-center space-x-1 shadow">
+                    <i id="sound-icon" class="fas fa-volume-up"></i>
+                    <span id="sound-text" class="hidden sm:inline">サウンド ON</span>
+                </button>
+                <button id="btn-chart" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded-full text-sm transition flex items-center space-x-1 shadow">
+                    <i class="fas fa-book"></i>
+                    <span>ヘボン式一覧</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full p-4 flex-grow flex flex-col justify-center items-center">
+        
+        <!-- TITLE / START SCREEN -->
+        <section id="screen-start" class="w-full bg-white rounded-3xl p-6 md:p-10 shadow-xl border-4 border-amber-300 text-center space-y-6 animate-float my-auto">
+            <div class="space-y-2">
+                <span class="inline-block px-4 py-1 bg-red-100 text-red-600 font-bold rounded-full text-sm">問題数メガ盛り全90種類！ 各コース30問を完全収録</span>
+                <h2 class="text-3xl md:text-4xl font-black text-slate-800">ヘボン式タイピングで<br class="sm:hidden">お寿司を握ろう！</h2>
+                <p class="text-slate-600 text-sm md:text-base">
+                    「し」は <span class="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-200">SHI</span>、
+                    「つ」は <span class="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-200">TSU</span>！<br>
+                    令和7年新基準の正解ヘボン式ローマ字を入力してお寿司を届けよう！
+                </p>
+            </div>
+
+            <!-- Difficulty Selector -->
+            <div class="space-y-3">
+                <p class="font-bold text-slate-700">コースを選んでね：</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                    <button data-difficulty="easy" class="btn-select-diff bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-400 p-4 rounded-2xl text-left transition transform hover:-translate-y-1 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <span class="text-2xl">🥚</span>
+                            <h3 class="font-bold text-lg text-emerald-700">見習い (初級)</h3>
+                            <p class="text-xs text-slate-500 mt-1">短めの寿司ネタ・飲み物など 30問</p>
+                        </div>
+                        <span class="mt-3 text-xs font-bold text-emerald-600 bg-emerald-200 px-2 py-1 rounded w-fit">制限時間: 60秒</span>
+                    </button>
+
+                    <button data-difficulty="medium" class="btn-select-diff bg-amber-50 hover:bg-amber-100 border-2 border-amber-400 p-4 rounded-2xl text-left transition transform hover:-translate-y-1 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <span class="text-2xl">🐟</span>
+                            <h3 class="font-bold text-lg text-amber-700">にぎり手 (中級)</h3>
+                            <p class="text-xs text-slate-500 mt-1">標準的なメニュー・サイド 30問</p>
+                        </div>
+                        <span class="mt-3 text-xs font-bold text-amber-600 bg-amber-200 px-2 py-1 rounded w-fit">制限時間: 60秒</span>
+                    </button>
+
+                    <button data-difficulty="hard" class="btn-select-diff bg-rose-50 hover:bg-rose-100 border-2 border-rose-400 p-4 rounded-2xl text-left transition transform hover:-translate-y-1 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <span class="text-2xl">🍣</span>
+                            <h3 class="font-bold text-lg text-rose-700">大将 (上級)</h3>
+                            <p class="text-xs text-slate-500 mt-1">拗音・長音・高級メニュー 30問</p>
+                        </div>
+                        <span class="mt-3 text-xs font-bold text-rose-600 bg-rose-200 px-2 py-1 rounded w-fit">制限時間: 60秒</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button id="btn-start" class="bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-600 hover:to-amber-600 text-white font-black text-xl px-12 py-4 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95">
+                    スタート！ 🚀
+                </button>
+            </div>
+        </section>
+
+        <!-- GAMEPLAY SCREEN -->
+        <section id="screen-game" class="hidden w-full flex flex-col items-center space-y-4 my-auto">
+            <!-- HUD Panel -->
+            <div class="w-full bg-white rounded-2xl p-4 shadow-md flex justify-between items-center border-2 border-amber-200 relative overflow-hidden">
+                <div id="timer-bar" class="absolute top-0 left-0 h-1.5 bg-gradient-to-r from-emerald-500 via-amber-500 to-red-500 transition-all duration-1000 w-full"></div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="text-center">
+                        <span class="text-xs text-slate-400 font-bold block">のこり時間</span>
+                        <span id="timer-display" class="text-2xl md:text-3xl font-black text-amber-600">60</span><span class="text-sm font-bold text-slate-500">秒</span>
+                    </div>
+                    <div class="h-8 w-0.5 bg-slate-200"></div>
+                    <div class="text-center">
+                        <span class="text-xs text-slate-400 font-bold block">うりあげ</span>
+                        <span id="score-display" class="text-2xl md:text-3xl font-black text-emerald-600">0</span><span class="text-sm font-bold text-slate-500">円</span>
+                    </div>
+                </div>
+
+                <!-- Combo Counter -->
+                <div id="combo-container" class="opacity-0 transition-opacity duration-300 flex items-center space-x-1 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full">
+                    <span class="text-amber-600 font-black text-lg" id="combo-display">0</span>
+                    <span class="text-amber-800 font-bold text-xs">連続コンボ！</span>
+                </div>
+            </div>
+
+            <!-- Conveyor Belt Animation & Customer Area -->
+            <div class="w-full bg-amber-100 rounded-3xl p-6 shadow-inner border-4 border-amber-300 relative overflow-hidden flex flex-col items-center justify-center min-h-[300px]">
+                
+                <div class="absolute top-2 left-6 opacity-30 flex items-center space-x-2">
+                    <span class="text-4xl">👻</span>
+                    <span class="bg-white px-3 py-1 rounded-full text-xs font-bold text-slate-600 shadow">ヘボン式のお寿司ちょうだい！</span>
+                </div>
+
+                <!-- Active Sushi Plate Card -->
+                <div id="sushi-card" class="bg-white rounded-2xl p-5 shadow-xl border-2 border-slate-100 text-center w-full max-w-md z-10 transform transition duration-150 relative animate-pop">
+                    <!-- SVG Visual Container -->
+                    <div id="sushi-icon-container" class="h-28 w-full flex items-center justify-center mb-1">
+                        <!-- SVG graphic dynamically loaded -->
+                    </div>
+
+                    <div id="kana-display" class="text-2xl md:text-3xl font-black text-slate-800 mb-2">すし</div>
+                    
+                    <!-- Romanization Target Display -->
+                    <div id="roma-container" class="text-2xl md:text-3xl font-mono font-bold tracking-widest bg-slate-50 py-2 rounded-xl border border-slate-200">
+                        <span id="roma-done" class="text-emerald-500"></span><span id="roma-next" class="text-red-500 underline decoration-4 underline-offset-4">s</span><span id="roma-todo" class="text-slate-400">ushi</span>
+                    </div>
+
+                    <!-- Warning Toast for Kunrei-shiki attempt -->
+                    <div id="kunrei-warning" class="hidden absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap z-20 animate-bounce">
+                        ⚠️ ヘボン式で入力してね！ (例: <span id="warning-hint">SHI</span>)
+                    </div>
+                </div>
+
+                <!-- Belt graphic at bottom -->
+                <div class="w-full h-8 conveyor-belt absolute bottom-0 left-0 right-0 border-t-2 border-amber-700"></div>
+            </div>
+
+            <!-- Keyboard Layout / Keypress Feedback -->
+            <div class="w-full bg-white rounded-2xl p-3 shadow-md border border-slate-200 text-center">
+                <p class="text-xs font-bold text-slate-400 mb-1">キーボードでタイピングしてね</p>
+                <div id="key-feedback" class="inline-block bg-slate-100 px-4 py-1 rounded-lg text-sm font-mono font-bold text-slate-600 min-w-[120px]">
+                    待機中...
+                </div>
+            </div>
+        </section>
+
+        <!-- RESULT SCREEN -->
+        <section id="screen-result" class="hidden w-full bg-white rounded-3xl p-6 md:p-10 shadow-xl border-4 border-amber-300 text-center space-y-6 my-auto">
+            <div>
+                <span class="text-5xl" id="res-rank-emoji">🎉</span>
+                <h2 class="text-3xl font-black text-slate-800 mt-2">タイムアップ！</h2>
+                <div id="res-rank-badge" class="inline-block px-4 py-1 rounded-full text-lg font-black bg-amber-100 text-amber-700 mt-1">
+                    評価: Aランク (ヘボン式マスター)
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+                <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                    <span class="text-xs font-bold text-amber-700 block">総売上</span>
+                    <span id="res-score" class="text-2xl font-black text-amber-600">0円</span>
+                </div>
+                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+                    <span class="text-xs font-bold text-emerald-700 block">提供した皿数</span>
+                    <span id="res-count" class="text-2xl font-black text-emerald-600">0皿</span>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-200">
+                    <span class="text-xs font-bold text-blue-700 block">正確さ</span>
+                    <span id="res-accuracy" class="text-2xl font-black text-blue-600">0%</span>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-2xl border border-purple-200">
+                    <span class="text-xs font-bold text-purple-700 block">タイピング速度</span>
+                    <span id="res-kpm" class="text-2xl font-black text-purple-600">0 CPM</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left max-w-xl mx-auto space-y-2">
+                <h3 class="font-bold text-sm text-slate-700 flex items-center space-x-1">
+                    <i class="fas fa-lightbulb text-amber-500"></i>
+                    <span>令和7年 内閣告示 ヘボン式ルールのおさらい</span>
+                </h3>
+                <div class="flex flex-wrap gap-2 text-xs" id="res-tips">
+                    <span class="bg-white border px-2 py-1 rounded font-mono">し → <b class="text-red-500">SHI</b></span>
+                    <span class="bg-white border px-2 py-1 rounded font-mono">ち → <b class="text-red-500">CHI</b></span>
+                    <span class="bg-white border px-2 py-1 rounded font-mono">つ → <b class="text-red-500">TSU</b></span>
+                    <span class="bg-white border px-2 py-1 rounded font-mono">ふ → <b class="text-red-500">FU</b></span>
+                    <span class="bg-white border px-2 py-1 rounded font-mono">じ → <b class="text-red-500">JI</b></span>
+                    <span class="bg-white border px-2 py-1 rounded font-mono">しゃ → <b class="text-red-500">SHA</b></span>
+                </div>
+            </div>
+
+            <div class="flex justify-center space-x-4">
+                <button id="btn-retry" class="bg-amber-500 hover:bg-amber-600 text-white font-black text-lg px-8 py-3 rounded-full shadow-lg transition transform hover:scale-105">
+                    もう一度あそぶ 🔄
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Hepburn Reference Chart -->
+    <div id="modal-chart" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex justify-center items-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border-4 border-amber-400">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h2 class="text-xl font-black text-slate-800 flex items-center space-x-2">
+                    <span>📖</span>
+                    <span>新基準！ヘボン式ローマ字早見表</span>
+                </h2>
+                <button id="btn-close-chart" class="text-slate-400 hover:text-slate-600 text-2xl font-bold px-2">
+                    &times;
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto space-y-4 pr-1 text-sm">
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs leading-relaxed">
+                    💡 <b>令和7年（2025年）12月より内閣告示によりヘボン式に統一されました。</b><br>
+                    タイピングテストや公式な表記として「SHI」「TSU」「CHI」「FU」などをマスターしましょう！
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-bold text-amber-700 text-xs uppercase tracking-wider">特に注意が必要なスペル</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono text-sm">
+                        <div class="bg-red-50 p-2 rounded-lg border border-red-200">
+                            <span class="text-slate-500 text-xs block">し</span>
+                            <span class="font-bold text-red-600">SHI</span>
+                            <span class="text-[10px] text-slate-400 block line-through">SI</span>
+                        </div>
+                        <div class="bg-red-50 p-2 rounded-lg border border-red-200">
+                            <span class="text-slate-500 text-xs block">ち</span>
+                            <span class="font-bold text-red-600">CHI</span>
+                            <span class="text-[10px] text-slate-400 block line-through">TI</span>
+                        </div>
+                        <div class="bg-red-50 p-2 rounded-lg border border-red-200">
+                            <span class="text-slate-500 text-xs block">つ</span>
+                            <span class="font-bold text-red-600">TSU</span>
+                            <span class="text-[10px] text-slate-400 block line-through">TU</span>
+                        </div>
+                        <div class="bg-red-50 p-2 rounded-lg border border-red-200">
+                            <span class="text-slate-500 text-xs block">ふ</span>
+                            <span class="font-bold text-red-600">FU</span>
+                            <span class="text-[10px] text-slate-400 block line-through">HU</span>
+                        </div>
+                        <div class="bg-red-50 p-2 rounded-lg border border-red-200">
+                            <span class="text-slate-500 text-xs block">じ</span>
+                            <span class="font-bold text-red-600">JI</span>
+                            <span class="text-[10px] text-slate-400 block line-through">ZI</span>
+                        </div>
+                        <div class="bg-red-50 p-2 rounded-lg border border-red-200">
+                            <span class="text-slate-500 text-xs block">しゃ</span>
+                            <span class="font-bold text-red-600">SHA</span>
+                            <span class="text-[10px] text-slate-400 block line-through">SYA</span>
+                        </div>
+                        <div class="bg-red-50 p-2 rounded-lg border border-red-200">
+                            <span class="text-slate-500 text-xs block">ちゃ</span>
+                            <span class="font-bold text-red-600">CHA</span>
+                            <span class="text-[10px] text-slate-400 block line-through">TYA</span>
+                        </div>
+                        <div class="bg-red-50 p-2 rounded-lg border border-red-200">
+                            <span class="text-slate-500 text-xs block">じゃ</span>
+                            <span class="font-bold text-red-600">JA</span>
+                            <span class="text-[10px] text-slate-400 block line-through">JYA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wider">五十音 ヘボン式基本一覧</h3>
+                    <div class="grid grid-cols-5 gap-1 text-center font-mono text-xs bg-slate-50 p-2 rounded-xl">
+                        <div class="p-1 bg-white rounded border">A (あ)</div>
+                        <div class="p-1 bg-white rounded border">I (い)</div>
+                        <div class="p-1 bg-white rounded border">U (う)</div>
+                        <div class="p-1 bg-white rounded border">E (え)</div>
+                        <div class="p-1 bg-white rounded border">O (お)</div>
+                        
+                        <div class="p-1 bg-white rounded border">KA (か)</div>
+                        <div class="p-1 bg-white rounded border">KI (き)</div>
+                        <div class="p-1 bg-white rounded border">KU (く)</div>
+                        <div class="p-1 bg-white rounded border">KE (け)</div>
+                        <div class="p-1 bg-white rounded border">KO (こ)</div>
+
+                        <div class="p-1 bg-white rounded border">SA (さ)</div>
+                        <div class="p-1 bg-red-100 border border-red-300 font-bold">SHI (し)</div>
+                        <div class="p-1 bg-white rounded border">SU (す)</div>
+                        <div class="p-1 bg-white rounded border">SE (せ)</div>
+                        <div class="p-1 bg-white rounded border">SO (そ)</div>
+
+                        <div class="p-1 bg-white rounded border">TA (た)</div>
+                        <div class="p-1 bg-red-100 border border-red-300 font-bold">CHI (ち)</div>
+                        <div class="p-1 bg-red-100 border border-red-300 font-bold">TSU (つ)</div>
+                        <div class="p-1 bg-white rounded border">TE (て)</div>
+                        <div class="p-1 bg-white rounded border">TO (と)</div>
+
+                        <div class="p-1 bg-white rounded border">HA (は)</div>
+                        <div class="p-1 bg-white rounded border">HI (ひ)</div>
+                        <div class="p-1 bg-red-100 border border-red-300 font-bold">FU (ふ)</div>
+                        <div class="p-1 bg-white rounded border">HE (へ)</div>
+                        <div class="p-1 bg-white rounded border">HO (ほ)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t text-right">
+                <button id="btn-modal-close-footer" class="bg-slate-700 hover:bg-slate-800 text-white font-bold text-sm px-6 py-2 rounded-full">
+                    とじる
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-3 text-xs text-slate-400">
+        © 2026 わくわく！新ヘボン式 寿司タイピング | 令和7年12月 内閣告示ヘボン式完全対応
+    </footer>
+
+    <script>
+        // Web Audio API Sound Engine
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
+
+            playCorrect() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playWrong() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(120, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            }
+
+            playComplete() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.15, now + i * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.06);
+                    osc.stop(now + i * 0.06 + 0.15);
+                });
+            }
+
+            playFinish() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.3);
+                });
+            }
+        }
+
+        const sounds = new SoundEngine();
+
+        // High Quality SVG Illustrations for every specific sushi and menu item
+        const SVG_GRAPHICS = {
+            // Uni Gunkan Maki (Sea Urchin on Rice with Nori)
+            uni: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="25" y="32" width="50" height="30" rx="8" fill="#1E293B"/>
+                <ellipse cx="50" cy="58" rx="22" ry="5" fill="#0F172A"/>
+                <path d="M 28 35 C 28 22, 40 18, 50 18 C 60 18, 72 22, 72 35 Z" fill="#F59E0B"/>
+                <ellipse cx="38" cy="28" rx="8" ry="5" fill="#FBBF24"/>
+                <ellipse cx="50" cy="25" rx="9" ry="6" fill="#FBBF24"/>
+                <ellipse cx="62" cy="28" rx="8" ry="5" fill="#D97706"/>
+                <path d="M 62 20 Q 68 15 72 22 Z" fill="#10B981"/>
+            </svg>`,
+
+            // Maguro Nigiri (Tuna)
+            maguro: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2"/>
+                <path d="M 20 42 C 25 25, 75 25, 80 42 C 80 48, 75 52, 50 52 C 25 52, 20 48, 20 42 Z" fill="#E11D48"/>
+                <path d="M 28 36 Q 50 30 72 36" stroke="#FDA4AF" stroke-width="2" stroke-linecap="round"/>
+            </svg>`,
+
+            // Salmon Nigiri
+            salmon: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2"/>
+                <path d="M 20 42 C 25 25, 75 25, 80 42 C 80 48, 75 52, 50 52 C 25 52, 20 48, 20 42 Z" fill="#FB923C"/>
+                <path d="M 30 34 Q 38 42 35 50" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                <path d="M 48 31 Q 56 39 53 49" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                <path d="M 65 34 Q 72 40 70 48" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+            </svg>`,
+
+            // Ebi Nigiri (Shrimp)
+            ebi: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F8FAFC"/>
+                <path d="M 18 42 C 25 24, 70 24, 82 40 C 75 48, 25 52, 18 42 Z" fill="#F43F5E"/>
+                <path d="M 22 42 Q 50 32 78 40" stroke="#FFFFFF" stroke-width="3"/>
+                <path d="M 80 40 L 92 32 L 88 45 Z" fill="#E11D48"/>
+            </svg>`,
+
+            // Tamago Nigiri (Egg)
+            tamago: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F8FAFC"/>
+                <rect x="22" y="26" width="56" height="24" rx="6" fill="#FACC15" stroke="#EAB308" stroke-width="2"/>
+                <rect x="44" y="26" width="12" height="32" fill="#0F172A"/>
+            </svg>`,
+
+            // Ikura Gunkan (Salmon Roe)
+            ikura: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="25" y="32" width="50" height="30" rx="8" fill="#1E293B"/>
+                <circle cx="36" cy="28" r="6" fill="#EF4444"/>
+                <circle cx="48" cy="24" r="6.5" fill="#F97316"/>
+                <circle cx="60" cy="28" r="6" fill="#EF4444"/>
+                <circle cx="42" cy="32" r="5.5" fill="#EF4444"/>
+                <circle cx="54" cy="32" r="5.5" fill="#F97316"/>
+                <circle cx="34" cy="26" r="1.5" fill="#FFFFFF"/>
+                <circle cx="46" cy="22" r="1.5" fill="#FFFFFF"/>
+                <circle cx="58" cy="26" r="1.5" fill="#FFFFFF"/>
+            </svg>`,
+
+            // Kappa Maki (Cucumber Roll)
+            kappa: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <g transform="translate(20, 25)">
+                    <rect x="0" y="0" width="22" height="28" rx="11" fill="#0F172A"/>
+                    <ellipse cx="11" cy="6" rx="9" ry="5" fill="#FFF"/>
+                    <rect x="8" y="4" width="6" height="5" fill="#22C55E"/>
+                </g>
+                <g transform="translate(39, 28)">
+                    <rect x="0" y="0" width="22" height="28" rx="11" fill="#0F172A"/>
+                    <ellipse cx="11" cy="6" rx="9" ry="5" fill="#FFF"/>
+                    <rect x="8" y="4" width="6" height="5" fill="#22C55E"/>
+                </g>
+                <g transform="translate(58, 25)">
+                    <rect x="0" y="0" width="22" height="28" rx="11" fill="#0F172A"/>
+                    <ellipse cx="11" cy="6" rx="9" ry="5" fill="#FFF"/>
+                    <rect x="8" y="4" width="6" height="5" fill="#22C55E"/>
+                </g>
+            </svg>`,
+
+            // Tako Nigiri (Octopus)
+            tako: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F8FAFC"/>
+                <!-- Purple Octopus Topping -->
+                <path d="M 22 42 C 25 26, 75 26, 78 42 C 78 48, 75 52, 50 52 C 25 52, 22 48, 22 42 Z" fill="#9333EA"/>
+                <circle cx="35" cy="38" r="3" fill="#FFFFFF"/>
+                <circle cx="50" cy="36" r="3.5" fill="#FFFFFF"/>
+                <circle cx="65" cy="38" r="3" fill="#FFFFFF"/>
+                <rect x="44" y="26" width="12" height="28" fill="#0F172A"/>
+            </svg>`,
+
+            // Ika Nigiri (Squid)
+            ika: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F1F5F9"/>
+                <!-- Translucent White Squid -->
+                <path d="M 22 40 C 25 24, 75 24, 78 40 C 78 47, 75 50, 50 50 C 25 50, 22 47, 22 40 Z" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2"/>
+                <!-- Shiso leaf under squid -->
+                <path d="M 40 38 Q 50 28 60 38 Q 50 45 40 38 Z" fill="#22C55E" opacity="0.6"/>
+                <!-- Slit cuts -->
+                <line x1="36" y1="32" x2="42" y2="40" stroke="#CBD5E1" stroke-width="1.5"/>
+                <line x1="48" y1="30" x2="54" y2="38" stroke="#CBD5E1" stroke-width="1.5"/>
+                <line x1="60" y1="32" x2="66" y2="40" stroke="#CBD5E1" stroke-width="1.5"/>
+            </svg>`,
+
+            // Anago / Unagi (Eel)
+            anago: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F8FAFC"/>
+                <!-- Glazed Brown Eel -->
+                <path d="M 18 42 C 22 25, 78 25, 82 42 C 82 48, 78 52, 50 52 C 22 52, 18 48, 18 42 Z" fill="#78350F"/>
+                <!-- Sweet Sauce Glaze -->
+                <path d="M 25 38 Q 50 28 75 38" stroke="#451A03" stroke-width="4" stroke-linecap="round"/>
+                <rect x="45" y="27" width="10" height="26" fill="#0F172A"/>
+            </svg>`,
+
+            // Hotate Nigiri (Scallop)
+            hotate: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F8FAFC"/>
+                <!-- Plump White Scallop -->
+                <ellipse cx="50" cy="36" rx="26" ry="12" fill="#FEF3C7" stroke="#FDE68A" stroke-width="2"/>
+                <line x1="50" y1="24" x2="50" y2="48" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="2 2"/>
+            </svg>`,
+
+            // Edamame
+            edamame: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <!-- Edamame Pod -->
+                <path d="M 20 45 C 30 25, 70 25, 80 45 C 70 55, 30 55, 20 45 Z" fill="#15803D"/>
+                <circle cx="35" cy="42" r="7" fill="#22C55E"/>
+                <circle cx="50" cy="40" r="8" fill="#22C55E"/>
+                <circle cx="65" cy="42" r="7" fill="#22C55E"/>
+            </svg>`,
+
+            // Ocha (Green Tea)
+            ocha: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="30" ry="6" fill="#CBD5E1"/>
+                <!-- Tea Teacup -->
+                <rect x="30" y="25" width="40" height="40" rx="8" fill="#15803D" stroke="#047857" stroke-width="2"/>
+                <ellipse cx="50" cy="25" rx="20" ry="6" fill="#16A34A"/>
+                <ellipse cx="50" cy="25" rx="16" ry="4" fill="#4ADE80"/>
+                <!-- Steam -->
+                <path d="M 45 18 Q 42 12 48 8" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                <path d="M 55 18 Q 52 12 58 8" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+            </svg>`,
+
+            // Juice / Soft Drink
+            juice: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="30" ry="6" fill="#CBD5E1"/>
+                <path d="M 32 20 L 38 60 C 38 63, 62 63, 62 60 L 68 20 Z" fill="#3B82F6" opacity="0.3"/>
+                <path d="M 34 28 L 38 60 C 38 62, 62 62, 62 60 L 66 28 Z" fill="#EF4444"/>
+                <line x1="55" y1="10" x2="45" y2="55" stroke="#FACC15" stroke-width="4" stroke-linecap="round"/>
+            </svg>`,
+
+            // Ice Cream
+            icecream: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="35" ry="7" fill="#CBD5E1"/>
+                <path d="M 35 48 L 50 72 L 65 48 Z" fill="#D97706"/>
+                <circle cx="50" cy="38" r="16" fill="#16A34A"/>
+                <circle cx="44" cy="32" r="10" fill="#4ADE80"/>
+            </svg>`,
+
+            // Ramen
+            ramen: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="42" ry="8" fill="#CBD5E1"/>
+                <path d="M 22 32 L 30 60 C 30 64, 70 64, 70 60 L 78 32 Z" fill="#EF4444"/>
+                <ellipse cx="50" cy="32" rx="28" ry="8" fill="#FEE2E2"/>
+                <ellipse cx="50" cy="32" rx="24" ry="6" fill="#F59E0B"/>
+                <!-- Egg & Pork -->
+                <circle cx="42" cy="32" r="5" fill="#FFF"/>
+                <circle cx="42" cy="32" r="2.5" fill="#F59E0B"/>
+                <circle cx="58" cy="32" r="6" fill="#B45309"/>
+            </svg>`,
+
+            // Chawanmushi
+            chawanmushi: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="35" ry="7" fill="#CBD5E1"/>
+                <!-- Cup Container -->
+                <path d="M 32 30 L 36 60 C 36 63, 64 63, 64 60 L 68 30 Z" fill="#3B82F6"/>
+                <ellipse cx="50" cy="30" rx="18" ry="5" fill="#FEF08A"/>
+                <!-- Toppings (Mitsuba, Shrimp) -->
+                <circle cx="46" cy="30" r="3" fill="#EF4444"/>
+                <path d="M 52 28 Q 56 26 54 32 Z" fill="#22C55E"/>
+            </svg>`,
+
+            // Pudding
+            pudding: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="40" ry="8" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="36" ry="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <!-- Pudding body -->
+                <path d="M 32 32 L 26 58 C 26 60, 74 60, 74 58 L 68 32 Z" fill="#FDE047"/>
+                <ellipse cx="50" cy="32" rx="18" ry="4" fill="#78350F"/>
+                <!-- Cherry on top -->
+                <circle cx="50" cy="24" r="4" fill="#DC2626"/>
+            </svg>`,
+
+            // Tai (Sea Bream)
+            tai: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F8FAFC"/>
+                <!-- Pinkish Bream Topping -->
+                <path d="M 20 42 C 25 25, 75 25, 80 42 C 80 48, 75 52, 50 52 C 25 52, 20 48, 20 42 Z" fill="#F472B6"/>
+                <path d="M 20 42 C 30 35, 70 35, 80 42 Z" fill="#FFF" opacity="0.4"/>
+            </svg>`,
+
+            // Hamachi / Kanpachi (Yellowtail)
+            hamachi: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="30" y="42" width="40" height="18" rx="9" fill="#F8FAFC"/>
+                <!-- White/Pink Tone Fish -->
+                <path d="M 20 42 C 25 25, 75 25, 80 42 C 80 48, 75 52, 50 52 C 25 52, 20 48, 20 42 Z" fill="#FECDD3"/>
+                <path d="M 20 42 C 35 30, 65 30, 80 42 C 60 48, 40 48, 20 42 Z" fill="#991B1B" opacity="0.7"/>
+            </svg>`,
+
+            // Miso Soup (Akadashi)
+            misosoup: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="35" ry="7" fill="#CBD5E1"/>
+                <!-- Black Lacquer Bowl -->
+                <path d="M 26 30 L 32 58 C 32 62, 68 62, 68 58 L 74 30 Z" fill="#0F172A"/>
+                <ellipse cx="50" cy="30" rx="24" ry="6" fill="#78350F"/>
+                <!-- Tofu cubes -->
+                <rect x="42" y="28" width="5" height="4" fill="#FFFFFF"/>
+                <rect x="52" y="29" width="4" height="4" fill="#FFFFFF"/>
+            </svg>`,
+
+            // Generic Side Dish fallback
+            side: `<svg width="120" height="90" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="68" rx="45" ry="10" fill="#E2E8F0"/>
+                <ellipse cx="50" cy="65" rx="42" ry="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <circle cx="50" cy="45" r="18" fill="#F59E0B"/>
+                <circle cx="50" cy="45" r="12" fill="#FBBF24"/>
+            </svg>`
+        };
+
+        const SUSHI_DATA = {
+            easy: [
+                { kana: "すし", roma: "sushi", svgKey: "maguro", price: 100 },
+                { kana: "うに", roma: "uni", svgKey: "uni", price: 250 },
+                { kana: "たまご", roma: "tamago", svgKey: "tamago", price: 100 },
+                { kana: "たこ", roma: "tako", svgKey: "tako", price: 100 },
+                { kana: "ふぐ", roma: "fugu", svgKey: "tai", price: 200 },
+                { kana: "えび", roma: "ebi", svgKey: "ebi", price: 120 },
+                { kana: "いか", roma: "ika", svgKey: "ika", price: 100 },
+                { kana: "さけ", roma: "sake", svgKey: "salmon", price: 120 },
+                { kana: "のり", roma: "nori", svgKey: "kappa", price: 80 },
+                { kana: "あじ", roma: "aji", svgKey: "hamachi", price: 120 },
+                { kana: "いわし", roma: "iwashi", svgKey: "hamachi", price: 120 },
+                { kana: "かっぱ", roma: "kappa", svgKey: "kappa", price: 100 },
+                { kana: "あなご", roma: "anago", svgKey: "anago", price: 180 },
+                { kana: "はまち", roma: "hamachi", svgKey: "hamachi", price: 150 },
+                { kana: "かつお", roma: "katsuo", svgKey: "maguro", price: 140 },
+                { kana: "ほたて", roma: "hotate", svgKey: "hotate", price: 200 },
+                { kana: "あわび", roma: "awabi", svgKey: "hotate", price: 300 },
+                { kana: "しゃり", roma: "shari", svgKey: "tamago", price: 80 },
+                { kana: "おちゃ", roma: "ocha", svgKey: "ocha", price: 0 },
+                { kana: "がり", roma: "gari", svgKey: "side", price: 0 },
+                { kana: "たい", roma: "tai", svgKey: "tai", price: 180 },
+                { kana: "ぷりん", roma: "purin", svgKey: "pudding", price: 150 },
+                { kana: "えだまめ", roma: "edamame", svgKey: "edamame", price: 120 },
+                { kana: "うなぎ", roma: "unagi", svgKey: "anago", price: 220 },
+                { kana: "いくら", roma: "ikura", svgKey: "ikura", price: 250 },
+                { kana: "さば", roma: "saba", svgKey: "hamachi", price: 120 },
+                { kana: "ひらめ", roma: "hirame", svgKey: "tai", price: 180 },
+                { kana: "じゅーす", roma: "ju-su", svgKey: "juice", price: 130 },
+                { kana: "あおさ", roma: "aosa", svgKey: "misosoup", price: 100 },
+                { kana: "あいす", roma: "aisu", svgKey: "icecream", price: 150 }
+            ],
+            medium: [
+                { kana: "まぐろ", roma: "maguro", svgKey: "maguro", price: 200 },
+                { kana: "サーモン", roma: "sa-mon", svgKey: "salmon", price: 180 },
+                { kana: "いくら", roma: "ikura", svgKey: "ikura", price: 300 },
+                { kana: "ちゃわんむし", roma: "chawanmushi", svgKey: "chawanmushi", price: 250 },
+                { kana: "いかしゅうまい", roma: "ikashuumai", svgKey: "ika", price: 280 },
+                { kana: "あぶりちーず", roma: "aburichi-zu", svgKey: "salmon", price: 220 },
+                { kana: "ねぎとろ", roma: "negitoro", svgKey: "maguro", price: 200 },
+                { kana: "かんぴょうまき", roma: "kanpyoumaki", svgKey: "kappa", price: 150 },
+                { kana: "しめさば", roma: "shimesaba", svgKey: "hamachi", price: 180 },
+                { kana: "ちゅうとろ", roma: "chuutoro", svgKey: "maguro", price: 400 },
+                { kana: "えんがわ", roma: "engawa", svgKey: "ika", price: 200 },
+                { kana: "つぶがい", roma: "tsubugai", svgKey: "hotate", price: 180 },
+                { kana: "あかだし", roma: "akadashi", svgKey: "misosoup", price: 150 },
+                { kana: "ふらいどぽてと", roma: "furaidopoteto", svgKey: "side", price: 200 },
+                { kana: "からあげ", roma: "karaage", svgKey: "side", price: 250 },
+                { kana: "かんぱち", roma: "kanpachi", svgKey: "hamachi", price: 220 },
+                { kana: "しらうお", roma: "shirauo", svgKey: "ika", price: 160 },
+                { kana: "こはだ", roma: "kohada", svgKey: "hamachi", price: 150 },
+                { kana: "たらこ", roma: "tarako", svgKey: "ikura", price: 180 },
+                { kana: "つなまよ", roma: "tsunamayo", svgKey: "kappa", price: 150 },
+                { kana: "らーめん", roma: "ra-men", svgKey: "ramen", price: 350 },
+                { kana: "みそしる", roma: "misoshiru", svgKey: "misosoup", price: 120 },
+                { kana: "ほっきがい", roma: "hokkigai", svgKey: "hotate", price: 200 },
+                { kana: "あぶりさーもん", roma: "aburisa-mon", svgKey: "salmon", price: 230 },
+                { kana: "とびっこ", roma: "tobikko", svgKey: "ikura", price: 180 },
+                { kana: "あかがい", roma: "akagai", svgKey: "hotate", price: 220 },
+                { kana: "さんま", roma: "sanma", svgKey: "hamachi", price: 160 },
+                { kana: "ちーずかまぼこ", roma: "chi-zukamaboko", svgKey: "side", price: 150 },
+                { kana: "しゃけおにぎり", roma: "shakeonigiri", svgKey: "salmon", price: 130 },
+                { kana: "きつねうどん", roma: "kitsuneudon", svgKey: "ramen", price: 300 }
+            ],
+            hard: [
+                { kana: "しょうゆらーめん", roma: "shouyura-men", svgKey: "ramen", price: 450 },
+                { kana: "とくじょうおおとろ", roma: "tokujouootoro", svgKey: "maguro", price: 600 },
+                { kana: "じゅんまいしゅ", roma: "junmaishu", svgKey: "ocha", price: 350 },
+                { kana: "ふっかつしゃりたま", roma: "fukkatsusharitama", svgKey: "tamago", price: 500 },
+                { kana: "しんせんさんま", roma: "shinsensanma", svgKey: "hamachi", price: 380 },
+                { kana: "ちょこたまごかきごおり", roma: "chokotamagokakigoori", svgKey: "pudding", price: 420 },
+                { kana: "きゃべつみそしる", roma: "kyabetsumisoshiru", svgKey: "misosoup", price: 200 },
+                { kana: "じかせいちゃわんむし", roma: "jikaseichawanmushi", svgKey: "chawanmushi", price: 320 },
+                { kana: "ほっかいしんせんいくら", roma: "hokkaishinsenikura", svgKey: "ikura", price: 550 },
+                { kana: "あぶりさんしょううなぎ", roma: "aburisanshouunagi", svgKey: "anago", price: 480 },
+                { kana: "とくせいちゅーしゅーめん", roma: "tokuseichu-shu-men", svgKey: "ramen", price: 500 },
+                { kana: "てんねんほんまぐろあかみ", roma: "tennenhonmaguroakami", svgKey: "maguro", price: 420 },
+                { kana: "ごくじょううにごんかん", roma: "gokujouunigunkan", svgKey: "uni", price: 650 },
+                { kana: "とくせんしめさばあぶり", roma: "tokusenshimesabaaburi", svgKey: "hamachi", price: 360 },
+                { kana: "しゅんのさんますがたにぎり", roma: "shunnosanmasugatanigiri", svgKey: "hamachi", price: 390 },
+                { kana: "まっちゃあいすくりーむ", roma: "matchaaisukuri-mu", svgKey: "icecream", price: 250 },
+                { kana: "とくせいしょうゆだれ", roma: "tokuseishouyudare", svgKey: "side", price: 100 },
+                { kana: "のうこうえびみそらーめん", roma: "noukouebimisora-men", svgKey: "ramen", price: 520 },
+                { kana: "なまさーもんいくらもり", roma: "namasa-monikuramori", svgKey: "salmon", price: 580 },
+                { kana: "あぶりちーずさーもん", roma: "aburichi-zusa-mon", svgKey: "salmon", price: 350 },
+                { kana: "とくせいあぶりあなご", roma: "tokuseiaburianago", svgKey: "anago", price: 400 },
+                { kana: "かになべみそしる", roma: "kaninabemisoshiru", svgKey: "misosoup", price: 380 },
+                { kana: "ほっかいとうほたて", roma: "hokkaidouhotate", svgKey: "hotate", price: 450 },
+                { kana: "あぶりえびちーず", roma: "aburiebichi-zu", svgKey: "ebi", price: 320 },
+                { kana: "じゅんせいっちゃ", roma: "junseiocha", svgKey: "ocha", price: 150 },
+                { kana: "ちゅーとろあぶりしょうゆ", roma: "chu-toroaburishouyu", svgKey: "maguro", price: 480 },
+                { kana: "しゃけのはらすあぶり", roma: "shakenoharasuaburi", svgKey: "salmon", price: 360 },
+                { kana: "じゅーしーからあげもり", roma: "ju-shi-karaagemori", svgKey: "side", price: 320 },
+                { kana: "ちーずろーるすし", roma: "chi-zuro-rusushi", svgKey: "kappa", price: 280 },
+                { kana: "ふっくらあなごいいむし", roma: "fukkuraanagoiimushi", svgKey: "anago", price: 420 }
+            ]
+        };
+
+        let currentDifficulty = 'easy';
+        let currentWordList = [];
+        let currentWordIndex = 0;
+        let currentTarget = null;
+        let typedIndex = 0;
+        
+        let score = 0;
+        let totalCount = 0;
+        let totalCorrectKeys = 0;
+        let totalMistakes = 0;
+        let currentCombo = 0;
+        let maxCombo = 0;
+
+        let timer = 60;
+        let timerInterval = null;
+        let isPlaying = false;
+
+        const screenStart = document.getElementById('screen-start');
+        const screenGame = document.getElementById('screen-game');
+        const screenResult = document.getElementById('screen-result');
+
+        const btnStart = document.getElementById('btn-start');
+        const btnRetry = document.getElementById('btn-retry');
+        const btnSoundToggle = document.getElementById('btn-sound-toggle');
+        const soundIcon = document.getElementById('sound-icon');
+        const soundText = document.getElementById('sound-text');
+        
+        const btnChart = document.getElementById('btn-chart');
+        const btnCloseChart = document.getElementById('btn-close-chart');
+        const btnModalCloseFooter = document.getElementById('btn-modal-close-footer');
+        const modalChart = document.getElementById('modal-chart');
+
+        const timerDisplay = document.getElementById('timer-display');
+        const timerBar = document.getElementById('timer-bar');
+        const scoreDisplay = document.getElementById('score-display');
+        const comboContainer = document.getElementById('combo-container');
+        const comboDisplay = document.getElementById('combo-display');
+
+        const sushiCard = document.getElementById('sushi-card');
+        const sushiIconContainer = document.getElementById('sushi-icon-container');
+        const kanaDisplay = document.getElementById('kana-display');
+        const romaDone = document.getElementById('roma-done');
+        const romaNext = document.getElementById('roma-next');
+        const romaTodo = document.getElementById('roma-todo');
+        const kunreiWarning = document.getElementById('kunrei-warning');
+        const warningHint = document.getElementById('warning-hint');
+        const keyFeedback = document.getElementById('key-feedback');
+
+        // Difficulty selector
+        document.querySelectorAll('.btn-select-diff').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.btn-select-diff').forEach(b => {
+                    b.classList.remove('ring-4', 'ring-amber-400', 'bg-amber-100');
+                });
+                const target = e.currentTarget;
+                target.classList.add('ring-4', 'ring-amber-400');
+                currentDifficulty = target.dataset.difficulty;
+            });
+        });
+
+        document.querySelector('[data-difficulty="easy"]').classList.add('ring-4', 'ring-amber-400');
+
+        const toggleModal = (show) => {
+            if (show) {
+                modalChart.classList.remove('hidden');
+            } else {
+                modalChart.classList.add('hidden');
+            }
+        };
+        btnChart.addEventListener('click', () => toggleModal(true));
+        btnCloseChart.addEventListener('click', () => toggleModal(false));
+        btnModalCloseFooter.addEventListener('click', () => toggleModal(false));
+        modalChart.addEventListener('click', (e) => {
+            if (e.target === modalChart) toggleModal(false);
+        });
+
+        btnSoundToggle.addEventListener('click', () => {
+            sounds.enabled = !sounds.enabled;
+            if (sounds.enabled) {
+                soundIcon.className = "fas fa-volume-up";
+                soundText.textContent = "サウンド ON";
+            } else {
+                soundIcon.className = "fas fa-volume-mute";
+                soundText.textContent = "サウンド OFF";
+            }
+        });
+
+        btnStart.addEventListener('click', startGame);
+        btnRetry.addEventListener('click', startGame);
+
+        function startGame() {
+            sounds.init();
+            screenStart.classList.add('hidden');
+            screenResult.classList.add('hidden');
+            screenGame.classList.remove('hidden');
+
+            score = 0;
+            totalCount = 0;
+            totalCorrectKeys = 0;
+            totalMistakes = 0;
+            currentCombo = 0;
+            maxCombo = 0;
+            timer = 60;
+            isPlaying = true;
+
+            currentWordList = [...SUSHI_DATA[currentDifficulty]].sort(() => Math.random() - 0.5);
+            currentWordIndex = 0;
+
+            scoreDisplay.textContent = '0';
+            timerDisplay.textContent = timer;
+            timerBar.style.width = '100%';
+            comboContainer.classList.add('opacity-0');
+
+            loadNextSushi();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timer--;
+                timerDisplay.textContent = timer;
+                timerBar.style.width = `${(timer / 60) * 100}%`;
+
+                if (timer <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function loadNextSushi() {
+            if (currentWordIndex >= currentWordList.length) {
+                currentWordList = [...SUSHI_DATA[currentDifficulty]].sort(() => Math.random() - 0.5);
+                currentWordIndex = 0;
+            }
+
+            currentTarget = currentWordList[currentWordIndex];
+            typedIndex = 0;
+
+            // Load exact custom SVG graphic
+            const svgContent = SVG_GRAPHICS[currentTarget.svgKey] || SVG_GRAPHICS['side'];
+            sushiIconContainer.innerHTML = svgContent;
+
+            kanaDisplay.textContent = currentTarget.kana;
+            
+            sushiCard.classList.remove('animate-pop');
+            void sushiCard.offsetWidth; // reflow trigger
+            sushiCard.classList.add('animate-pop');
+
+            updateRomaDisplay();
+        }
+
+        function updateRomaDisplay() {
+            const targetRoma = currentTarget.roma;
+            const done = targetRoma.substring(0, typedIndex);
+            const next = targetRoma.substring(typedIndex, typedIndex + 1);
+            const todo = targetRoma.substring(typedIndex + 1);
+
+            romaDone.textContent = done;
+            romaNext.textContent = next;
+            romaTodo.textContent = todo;
+
+            kunreiWarning.classList.add('hidden');
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!isPlaying) return;
+
+            if (e.key === ' ') e.preventDefault();
+
+            const key = e.key.toLowerCase();
+            
+            if (key.length !== 1 || !/[a-z\-]/i.test(key)) return;
+
+            keyFeedback.textContent = `入力: ${key.toUpperCase()}`;
+            keyFeedback.classList.remove('bg-red-100', 'text-red-600');
+
+            const expectedKey = currentTarget.roma[typedIndex];
+
+            if (key === expectedKey) {
+                sounds.playCorrect();
+                totalCorrectKeys++;
+                typedIndex++;
+                currentCombo++;
+                if (currentCombo > maxCombo) maxCombo = currentCombo;
+
+                if (currentCombo >= 3) {
+                    comboDisplay.textContent = currentCombo;
+                    comboContainer.classList.remove('opacity-0');
+                }
+
+                if (typedIndex >= currentTarget.roma.length) {
+                    sounds.playComplete();
+                    score += currentTarget.price + (currentCombo * 15);
+                    scoreDisplay.textContent = score.toLocaleString();
+                    totalCount++;
+
+                    sushiCard.classList.add('scale-105', 'border-emerald-400');
+                    setTimeout(() => {
+                        sushiCard.classList.remove('scale-105', 'border-emerald-400');
+                    }, 150);
+
+                    currentWordIndex++;
+                    loadNextSushi();
+                } else {
+                    updateRomaDisplay();
+                }
+
+            } else {
+                sounds.playWrong();
+                totalMistakes++;
+                currentCombo = 0;
+                comboContainer.classList.add('opacity-0');
+
+                sushiCard.classList.add('animate-shake', 'border-red-400');
+                keyFeedback.classList.add('bg-red-100', 'text-red-600');
+                setTimeout(() => sushiCard.classList.remove('animate-shake', 'border-red-400'), 300);
+
+                checkKunreiMistake(key);
+            }
+        });
+
+        function checkKunreiMistake(pressedKey) {
+            const fullRoma = currentTarget.roma;
+            const currentSub = fullRoma.substring(typedIndex);
+
+            if (currentSub.startsWith('shi') && pressedKey === 'i' && typedIndex > 0 && fullRoma[typedIndex - 1] === 's') {
+                showWarningHint('SHI');
+            } else if (currentSub.startsWith('chi') && pressedKey === 'i' && typedIndex > 0 && fullRoma[typedIndex - 1] === 'c') {
+                showWarningHint('CHI');
+            } else if (currentSub.startsWith('tsu') && pressedKey === 'u' && typedIndex > 0 && fullRoma[typedIndex - 1] === 't') {
+                showWarningHint('TSU');
+            } else if (currentSub.startsWith('fu') && pressedKey === 'h') {
+                showWarningHint('FU');
+            } else if (currentSub.startsWith('shi')) {
+                showWarningHint('SHI');
+            } else if (currentSub.startsWith('chi')) {
+                showWarningHint('CHI');
+            } else if (currentSub.startsWith('tsu')) {
+                showWarningHint('TSU');
+            } else if (currentSub.startsWith('fu')) {
+                showWarningHint('FU');
+            }
+        }
+
+        function showWarningHint(hintText) {
+            warningHint.textContent = hintText;
+            kunreiWarning.classList.remove('hidden');
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(timerInterval);
+            sounds.playFinish();
+
+            screenGame.classList.add('hidden');
+            screenResult.classList.remove('hidden');
+
+            const totalKeys = totalCorrectKeys + totalMistakes;
+            const accuracy = totalKeys > 0 ? Math.round((totalCorrectKeys / totalKeys) * 100) : 0;
+            const cpm = Math.round((totalCorrectKeys / 60) * 60);
+
+            document.getElementById('res-score').textContent = `${score.toLocaleString()}円`;
+            document.getElementById('res-count').textContent = `${totalCount}皿`;
+            document.getElementById('res-accuracy').textContent = `${accuracy}%`;
+            document.getElementById('res-kpm').textContent = `${cpm} CPM`;
+
+            const rankBadge = document.getElementById('res-rank-badge');
+            const rankEmoji = document.getElementById('res-rank-emoji');
+
+            if (score >= 3500 && accuracy >= 90) {
+                rankBadge.textContent = "評価: Sランク (名人級大将)";
+                rankBadge.className = "inline-block px-4 py-1 rounded-full text-lg font-black bg-yellow-100 text-yellow-800 border border-yellow-400 mt-1";
+                rankEmoji.textContent = "👑";
+            } else if (score >= 2000) {
+                rankBadge.textContent = "評価: Aランク (ヘボン式マスター)";
+                rankBadge.className = "inline-block px-4 py-1 rounded-full text-lg font-black bg-emerald-100 text-emerald-800 border border-emerald-400 mt-1";
+                rankEmoji.textContent = "🎉";
+            } else if (score >= 1000) {
+                rankBadge.textContent = "評価: Bランク (一人前職人)";
+                rankBadge.className = "inline-block px-4 py-1 rounded-full text-lg font-black bg-blue-100 text-blue-800 border border-blue-400 mt-1";
+                rankEmoji.textContent = "🍣";
+            } else {
+                rankBadge.textContent = "評価: Cランク (修行中)";
+                rankBadge.className = "inline-block px-4 py-1 rounded-full text-lg font-black bg-slate-100 text-slate-800 border border-slate-300 mt-1";
+                rankEmoji.textContent = "🐣";
+            }
+        }
+    </script>
+</body>
+</html>
